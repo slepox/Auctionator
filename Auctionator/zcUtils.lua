@@ -381,7 +381,7 @@ end
 
 -----------------------------------------
 
-function zc.PrintTable (t, indent)
+function zc.PrintTable (t, indent, norecurse)
 
 	if (not indent) then
 		indent = 0;
@@ -403,7 +403,9 @@ function zc.PrintTable (t, indent)
 	for n, v in pairs (t) do
 		if (type(v) == "table") then
 			zc.msg (padding..n, "TABLE");
-			zc.PrintTable(v, indent+1);
+			if (not norecurse) then
+				zc.PrintTable(v, indent+1);
+			end
 		elseif (type(v) == "userdata") then
 			zc.msg (padding..n, "userdata");
 		else
@@ -415,17 +417,43 @@ end
 
 -----------------------------------------
 
+function zc.IsBattlePetLink (itemLink)
+
+--zc.msg (zc.printableLink (itemLink));
+	return zc.StringContains (itemLink, "Hbattlepet:");
+end
+
+-----------------------------------------
+
+function zc.ParseBattlePetLink (itemLink)
+
+	local _, speciesID, level, breedQuality, maxHealth, power, speed, battlePetID = strsplit(":", itemLink)
+
+	local name = string.gsub(string.gsub(itemLink, "^(.*)%[", ""), "%](.*)$", "");
+
+	return tonumber(speciesID), tonumber(level), tonumber(breedQuality), tonumber(maxHealth), tonumber(power), tonumber(speed), battlePetID, name
+	
+end
+-----------------------------------------
+
 function zc.ItemIDfromLink (itemLink)
 
 	if (itemLink == nil) then
 		return 0,0,0;
 	end
 	
-	local found, _, itemString = string.find(itemLink, "^|c%x+|H(.+)|h%[.*%]")
-	local _, itemId, _, _, _, _, _, suffixId, uniqueId = strsplit(":", itemString)
+	if (zc.IsBattlePetLink (itemLink)) then
+		local speciesID, level, breedQuality, maxHealth, power, speed, battlePetID, name = zc.ParseBattlePetLink(itemLink)
+		
+		return "BP_"..tostring(speciesID), breedQuality
+	
+	else
+	
+		local found, _, itemString = string.find(itemLink, "^|c%x+|H(.+)|h%[.*%]")
+		local _, itemId, _, _, _, _, _, suffixId, uniqueId = strsplit(":", itemString)
 
-	return itemId, suffixId, uniqueId;
-
+		return itemId, suffixId, uniqueId;
+	end
 end
 
 -----------------------------------------
@@ -619,7 +647,8 @@ function zc.md (...)
 
 		local funcnames = zc.printstack ( { silent=true } );
 
-		local fname = "???";
+		local fname = "???"
+		local aname = "???"
 		
 --		if (funcnames[2]) then
 --			fname = string.lower (funcnames[2]);
@@ -633,8 +662,11 @@ function zc.md (...)
 			fname = string.lower (funcnames[2]);
 		end
 		
-		if (zc.StringStartsWith (fname, "atr_")) then
+		if (zc.StringStartsWith (fname, "oym_", "atr_", "eqx_")) then
+			aname = fname:sub (0,4)
 			fname = fname:sub (5);
+		else
+			aname = addonName:sub(0,3)..":";
 		end
 
 		local color = "ffffff";
@@ -666,7 +698,7 @@ function zc.md (...)
 			color = string.format ("%02x%02x%02x", r, g, b);
 		end
 		
-		zc.msg ("|cff00ffff<".."|cff"..color..fname.."|cff00ffff>|r", ...);
+		zc.msg ("|cffff33ff<"..aname.."|cff"..color..fname.."|cff00ffff>|r", ...);
 	end
 end
 
