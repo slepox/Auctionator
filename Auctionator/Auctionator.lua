@@ -1235,7 +1235,7 @@ function Atr_GetSellItemInfo ()
 					
 			local battlePetID = 0		-- unofortunately we don't know it
 			
-			auctionItemLink = "|cffcccccc|Hbattlepet:"..speciesID..":"..level..":"..breedQuality..":"..maxHealth..":"..power..":"..speed..":"..battlePetID.."|h"..name.."|h|r";
+			auctionItemLink = "|cffcccccc|Hbattlepet:"..speciesID..":"..level..":"..breedQuality..":"..maxHealth..":"..power..":"..speed..":"..battlePetID.."|h["..name.."]|h|r";
 		
 			gBattlePetIconCache[auctionItemLink] = auctionTexture;
 			
@@ -2827,13 +2827,13 @@ function Atr_OnNewAuctionUpdate()
 		if (gJustPosted.ItemName == nil) then
 			local IDstring = zc.ItemIDStrfromLink (auctionLink)
 			
-		zz (auctionItemName, IDstring, auctionLink)
-		
 			local cacheHit = gSellPane:DoSearch (auctionItemName, IDstring, auctionLink, 20);
 			
-			gSellPane.totalItems	= Atr_GetNumItemInBags (auctionItemName);
+			gSellPane.totalItems	= Atr_GetNumItemInBags (auctionLink);
 			gSellPane.fullStackSize = auctionLink and (select (8, GetItemInfo (auctionLink))) or 0;
 
+		--zz (auctionItemName, IDstring, auctionLink, "totalItems ", gSellPane.totalItems)
+		
 			local prefNumStacks, prefStackSize = Atr_GetSellStacking (auctionLink, auctionCount, gSellPane.totalItems);
 			
 			if (time() - gAutoSingleton < 5) then
@@ -3942,10 +3942,15 @@ end
 
 -----------------------------------------
 
-function Atr_GetNumItemInBags (theItemName)
+function Atr_GetNumItemInBags (targItemLink)
 
 	local numItems = 0;
 	local b, bagID, slotID, numslots;
+	
+	local targItemName, targIsBattlePet = zc.ItemNamefromLink (targItemLink)
+	
+	zz (zc.printableLink(targItemLink))
+	zz (zc.printableLink(targItemName), targIsBattlePet)
 	
 	for b = 1, #kBagIDs do
 		bagID = kBagIDs[b];
@@ -3954,10 +3959,11 @@ function Atr_GetNumItemInBags (theItemName)
 		for slotID = 1,numslots do
 			local itemLink = GetContainerItemLink(bagID, slotID);
 			if (itemLink) then
-				local itemName				= GetItemInfo(itemLink);
-				local texture, itemCount	= GetContainerItemInfo(bagID, slotID);
+				local itemName, isBattlePet = zc.ItemNamefromLink (itemLink)
 
-				if (itemName == theItemName) then
+				if (itemName == targItemName and isBattlePet == targIsBattlePet) then
+
+					local _, itemCount	= GetContainerItemInfo(bagID, slotID)
 					numItems = numItems + itemCount;
 				end
 			end

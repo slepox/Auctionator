@@ -427,10 +427,19 @@ end
 
 function zc.ParseBattlePetLink (itemLink)
 
-	local _, speciesID, level, breedQuality, maxHealth, power, speed, battlePetID = strsplit(":", itemLink)
+	local _, speciesID, level, breedQuality, maxHealth, power, speed, other = strsplit(":", itemLink)
 
-	local name = string.gsub(string.gsub(itemLink, "^(.*)%[", ""), "%](.*)$", "");
+	--local name = string.gsub(string.gsub(itemLink, "^(.*)%[", ""), "%](.*)$", "");
 
+	local battlePetID, name, c, d, e = strsplit ("|", other);
+	
+	--zc.msg ( "other:", zc.printableLink(other), "bpid:", battlePetID, "name: ", name, "C", c, "d", d, "e", e)
+--zc.msg ("name: ", name);
+
+	name = string.sub (name, 2, string.len(name))
+
+	name = zc.TrimBrackets (name);
+	
 	return tonumber(speciesID), tonumber(level), tonumber(breedQuality), tonumber(maxHealth), tonumber(power), tonumber(speed), battlePetID, name
 	
 end
@@ -454,6 +463,26 @@ function zc.ItemIDfromLink (itemLink)
 
 		return itemId, suffixId, uniqueId;
 	end
+end
+
+-----------------------------------------
+
+function zc.ItemNamefromLink (itemLink)
+
+	if (itemLink == nil) then
+		return "", false;
+	end
+	
+	if (zc.IsBattlePetLink (itemLink)) then
+		local speciesID, level, breedQuality, maxHealth, power, speed, battlePetID, name = zc.ParseBattlePetLink(itemLink)
+		
+		return name, true;
+	else
+		local name = GetItemInfo (itemLink)
+		return name, false;
+	end
+	
+	return "", false
 end
 
 -----------------------------------------
@@ -931,6 +960,26 @@ function zc.TrimQuotes (s)
 			start = 2
 		end
 		if (s:sub(last,last) == "\"") then
+			last = last-1
+		end
+	end
+
+	return string.sub (s, start, last)
+
+end
+
+-----------------------------------------
+
+function zc.TrimBrackets (s)
+
+	local start = 1
+	local last  = string.len(s)
+	
+	if (last > 1) then
+		if (s:sub(1,1) == "[") then
+			start = 2
+		end
+		if (s:sub(last,last) == "]") then
 			last = last-1
 		end
 	end
