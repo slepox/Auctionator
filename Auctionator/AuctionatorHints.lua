@@ -895,7 +895,7 @@ end
 	
 -----------------------------------------
 
-function Atr_STWP_GetPrices (link, num, showStackPrices, itemName, itemType, itemRarity, itemLevel)
+function Atr_STWP_GetPrices (link, num, showStackPrices, itemVendorPrice, itemName, itemType, itemRarity, itemLevel)
 
 	local vendorPrice	= 0;
 	local auctionPrice	= 0;
@@ -940,7 +940,7 @@ function Atr_ShowTipWithPricing (tip, link, num)
 	end
 
 
-	local vendorPrice, auctionPrice, dePrice = Atr_STWP_GetPrices (link, num, showStackPrices, itemName, itemType, itemRarity, itemLevel);
+	local vendorPrice, auctionPrice, dePrice = Atr_STWP_GetPrices (link, num, showStackPrices, itemVendorPrice, itemName, itemType, itemRarity, itemLevel);
 
 	-- vendor info
 
